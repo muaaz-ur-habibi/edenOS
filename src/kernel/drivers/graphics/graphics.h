@@ -212,5 +212,6 @@ void gfx_rect(uint32_t x, uint32_t y,
              uint32_t color);
 void gfx_drawchar(int x, int y, char c, uint32_t color);
 void gfx_drawstring(int x, int y, char *string, uint32_t color);
+void switch_buffers();
 
 #endif

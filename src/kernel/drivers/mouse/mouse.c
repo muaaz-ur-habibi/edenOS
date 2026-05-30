@@ -1,109 +1,80 @@
 #include "mouse.h"
 
-// ts isnt working gng </3, just keeps hanging the kernel
+uint8_t mouse_cycle = 0;
+uint8_t mouse_bytes[3];
+int mouse_x, mouse_y, mouseDown = 0;
 
-//Mouse.inc by SANiK
-//License: Use as you wish, except to cause damage
-unsigned char mouse_cycle=0;     //unsigned char
-signed char mouse_byte[3];    //signed char
-signed char mouse_x=0;         //signed char
-signed char mouse_y=0;         //signed char
-
-//Mouse functions
-static inline void mouse_wait(unsigned char a_type) //unsigned char
+void mouse_write(uint8_t write_byte)
 {
-  unsigned int _time_out=100000; //unsigned int
-  if(a_type==0)
-  {
-    while(_time_out--) //Data
-    {
-      if((port_byte_in(0x64) & 1)==1)
-      {
-        return;
-      }
-    }
-    return;
-  }
-  else
-  {
-    while(_time_out--) //Signal
-    {
-      if((port_byte_in(0x64) & 2)==0)
-      {
-        return;
-      }
-    }
-    return;
-  }
+    while ((port_byte_in(0x64) & 0x02));
+    port_byte_out(0x64, 0xD4);
+    while ((port_byte_in(0x64) & 0x02));
+    port_byte_out(0x60, write_byte);
+    while (!(port_byte_in(0x64) & 0x01));
+    port_byte_in(0x60); 
 }
 
-static inline void mouse_write(unsigned char a_write) //unsigned char
+void mouse_poll()
 {
-  //Wait to be able to send a command
-  mouse_wait(1);
-  //Tell the mouse we are sending a command
-  port_byte_out(0x64, 0xD4);
-  //Wait for the final part
-  mouse_wait(1);
-  //Finally write
-  port_byte_out(0x60, a_write);
+    uint8_t stat = port_byte_in(0x64);
+        
+        if ((stat & 0x01))
+        {
+            if (stat & 0x20)
+            {
+                while (port_byte_in(0x64) & 0x01)
+                {
+                    uint8_t data = port_byte_in(0x60);
+                    if (mouse_cycle == 0) {
+                        if (!(data & 0x08)) continue; 
+                        mouse_bytes[0] = data;
+                        mouse_cycle = 1;
+                    } 
+                    else if (mouse_cycle == 1) {
+                        mouse_bytes[1] = data;
+                        mouse_cycle = 2;
+                    } 
+                    else if (mouse_cycle == 2) {
+                        mouse_bytes[2] = data;
+                        mouse_cycle = 0; 
+
+                        uint8_t flags = mouse_bytes[0];
+                        int16_t rel_x = mouse_bytes[1];
+                        int16_t rel_y = mouse_bytes[2];
+
+                        if (flags & 0x10) rel_x |= 0xFF00; 
+                        if (flags & 0x20) rel_y |= 0xFF00;
+
+                        int16_t abs_x = (rel_x < 0) ? -rel_x : rel_x;
+                        int16_t abs_y = (rel_y < 0) ? -rel_y : rel_y;
+                        if (abs_x > 5) rel_x *= 2;
+                        if (abs_y > 5) rel_y *= 2;
+
+                        mouse_x += rel_x;
+                        mouse_y -= rel_y;
+
+                        // 0 = L, 1 = R, 2 = M
+                        mouseDown = (flags & 0x01); 
+
+                        if (mouse_x < 0) mouse_x = 0;
+                        if (mouse_y < 0) mouse_y = 0;
+                        if (mouse_x >= 1024)  mouse_x = 1024 - 1;
+                        if (mouse_y >= 768) mouse_y = 768 - 1;
+                    }
+                }
+                
+                ui_draw_cursor(mouse_x, mouse_y);
+            }
+        }
 }
 
-unsigned char mouse_read()
+void init_mouse()
 {
-  //Get's response from mouse
-  mouse_wait(0); 
-  return port_byte_in(0x60);
-}
+    while ((port_byte_in(0x64) & 0x02));
+    port_byte_out(0x64, 0xA8); 
 
-void mouse_handler(registers_data *reg) //struct regs *a_r (not used but just there)
-{
-    switch(mouse_cycle)
-    {
-        case 0:
-        mouse_byte[0]=port_byte_in(0x60);
-        mouse_cycle++;
-        break;
-        case 1:
-        mouse_byte[1]=port_byte_in(0x60);
-        mouse_cycle++;
-        break;
-        case 2:
-        mouse_byte[2]=port_byte_in(0x60);
-        mouse_x=mouse_byte[1];
-        mouse_y=mouse_byte[2];
-        mouse_cycle=0;
-        break;
-    }
-}
-
-void mouse_install()
-{
-  unsigned char _status;  //unsigned char
- 
-  //Enable the auxiliary mouse device
-  mouse_wait(1);
-  port_byte_out(0x64, 0xA8);
-  
-  //Enable the interrupts
-  mouse_wait(1);
-  port_byte_out(0x64, 0x20);
-  mouse_wait(0);
-  _status=(port_byte_in(0x60) | 2);
-  mouse_wait(1);
-  port_byte_out(0x64, 0x60);
-  mouse_wait(1);
-  port_byte_out(0x60, _status);
-  
-  //Tell the mouse to use default settings
-  mouse_write(0xF6);
-  mouse_read();  //Acknowledge
-  
-  //Enable the mouse
-  mouse_write(0xF4);
-  mouse_read();  //Acknowledge
-
-  //Setup the mouse handler
-  //irq_install_handler(12, mouse_handler);
-  register_interrupt_handler(IRQ12, mouse_handler);
+    mouse_write(0xF6);
+    mouse_write(0xF3);
+    mouse_write(200);
+    mouse_write(0xF4);
 }

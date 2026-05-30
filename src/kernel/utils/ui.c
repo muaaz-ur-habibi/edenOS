@@ -32,6 +32,47 @@ void ui_draw_hline(uint32_t x, uint32_t y, uint32_t l, uint32_t color)
     }
 }
 
+void ui_draw_vline(uint32_t x, uint32_t y, uint32_t l, uint32_t color)
+{
+    for (size_t i = 0; i < l; i++)
+    {
+        gfx_putpixel(x, y+i, color);
+    }
+}
+
+void ui_draw_line(int x0, int y0, int x1, int y1, uint32_t color)
+{
+    int dx = (x1 > x0) ? (x1 - x0) : (x0 - x1);
+    int dy = (y1 > y0) ? (y1 - y0) : (y0 - y1);
+
+    int sx = (x0 < x1) ? 1 : -1;
+    int sy = (y0 < y1) ? 1 : -1;
+
+    int err = dx - dy;
+
+    while (1)
+    {
+        gfx_putpixel(x0, y0, color);
+
+        if (x0 == x1 && y0 == y1)
+            break;
+
+        int e2 = 2 * err;
+
+        if (e2 > -dy)
+        {
+            err -= dy;
+            x0 += sx;
+        }
+
+        if (e2 < dx)
+        {
+            err += dx;
+            y0 += sy;
+        }
+    }
+}
+
 void ui_draw_circle(uint32_t xc, uint32_t yc, uint32_t r, uint32_t color)
 {
     int x = 0;
@@ -60,9 +101,17 @@ void ui_draw_circle(uint32_t xc, uint32_t yc, uint32_t r, uint32_t color)
     }
 }
 
+void ui_draw_triangle(uint32_t x, uint32_t y, uint32_t b, uint32_t h, uint32_t color)
+{
+    ui_draw_vline(x, y, h, color);
+    ui_draw_hline(x, y+h, b, color);
+    ui_draw_line((int)x, (int)y, (int)x+b, (int)y+h, color);
+}
+
 void ui_draw_cursor(uint32_t x, uint32_t y)
 {
-    ui_draw_circle(x, y, 1, 0xffffff);
+    //ui_draw_circle(x, y, 2, 0xff0000);
+    ui_draw_triangle(x, y, 9, 12, 0xff0000);
 }
 
 void ui_draw_button(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t color)
@@ -95,7 +144,7 @@ void ui_create_window(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t b
     windows[n_windows++] = win;
 }
 
-void ui_draw_window()
+void ui_draw_windows()
 {
     for (size_t i = 0; i < n_windows; i++)
     {

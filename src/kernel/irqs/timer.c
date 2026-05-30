@@ -5,11 +5,9 @@ uint32_t tick = 0;
 static void timer_callback(registers_data *reg)
 {
     tick++;
-
-    //vga_prints("Tick ");
-    //vga_printi(tick);
-    //vga_prints("\n");
 }
+
+uint32_t get_tick() { return tick; }
 
 void init_timer(uint32_t freq)
 {

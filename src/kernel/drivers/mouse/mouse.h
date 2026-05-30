@@ -8,9 +8,8 @@
 #include "../../interrupts/isr.h"
 #include "../graphics/graphics.h"
 
-static inline void mouse_wait(unsigned char a_type);
-static inline void mouse_write(unsigned char a_write);
-unsigned char mouse_read();
-void mouse_install();
+void mouse_write(uint8_t write_byte);
+void mouse_poll();
+void init_mouse();
 
 #endif

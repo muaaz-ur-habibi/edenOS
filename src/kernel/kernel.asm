@@ -23,12 +23,6 @@ dw 0
 dd 20
 header_end:
 
-; multiboot 1 header
-;align 4
-;dd 0x1badb002
-;dd 0x00
-;dd - (0x1badb002 + 0x00)
-
 section .text
 global start
 extern k_main
