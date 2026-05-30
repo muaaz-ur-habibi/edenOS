@@ -83,7 +83,7 @@ void k_main(uint32_t magic, uint32_t mb2_addr) {
                 break;
             case MULTIBOOT_FRAMEBUFFER_TYPE_RGB:
 				gfx_init((uint32_t *)fb, fb_tag->common.framebuffer_width, fb_tag->common.framebuffer_height, fb_tag->common.framebuffer_pitch, fb_tag->common.framebuffer_bpp);
-				gfx_cls(0x22ff00);
+				gfx_cls(BACKGROUND_COLOR);
                 switch_buffers();
 				//current_gfx_mode = GRAPHICS_MODE_RGB;
                 break;
@@ -139,14 +139,18 @@ void k_main(uint32_t magic, uint32_t mb2_addr) {
 
 	ui_create_window(200, 100, 400, 300, 5, 0xffffff, "Console");
 
+    int mousex, mousey;
+
     uint32_t frame_start;
     while (1) {
         frame_start = get_tick();
+        gfx_cls(BACKGROUND_COLOR);
         ui_draw_windows();
 
         // polling the mouse
-        mouse_poll();
-
-        while ((get_tick() - frame_start) < FRAME_TIME_MS) { }
+        mouse_poll(&mousex, &mousey);
+        ui_draw_cursor(mousex, mousey);
+        switch_buffers();
+        //while ((get_tick() - frame_start) < FRAME_TIME_MS) { }
     }
 }

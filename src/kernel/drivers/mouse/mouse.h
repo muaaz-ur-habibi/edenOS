@@ -9,7 +9,7 @@
 #include "../graphics/graphics.h"
 
 void mouse_write(uint8_t write_byte);
-void mouse_poll();
+void mouse_poll(int *mouse_x, int *mouse_y);
 void init_mouse();
 
 #endif

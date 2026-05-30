@@ -14,7 +14,7 @@ void mouse_write(uint8_t write_byte)
     port_byte_in(0x60); 
 }
 
-void mouse_poll()
+void mouse_poll(int *mousex, int *mousey)
 {
     uint8_t stat = port_byte_in(0x64);
         
@@ -60,10 +60,11 @@ void mouse_poll()
                         if (mouse_y < 0) mouse_y = 0;
                         if (mouse_x >= 1024)  mouse_x = 1024 - 1;
                         if (mouse_y >= 768) mouse_y = 768 - 1;
+
+                        *mousex = mouse_x;
+                        *mousey = mouse_y;
                     }
                 }
-                
-                ui_draw_cursor(mouse_x, mouse_y);
             }
         }
 }

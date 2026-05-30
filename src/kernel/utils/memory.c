@@ -1,6 +1,6 @@
 #include "memory.h"
 
-static unsigned char malloc_mem[1024 * 768 * 4];
+static unsigned char malloc_mem[1024 * 768 * 4 * 2];
 static size_t mem_idx = 0;
 
 int get_mem_idx() { return mem_idx; }

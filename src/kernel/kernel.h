@@ -18,6 +18,8 @@
 #define TARGET_FPS 60
 #define FRAME_TIME_MS (1000/TARGET_FPS)
 
+#define BACKGROUND_COLOR 0x22ff00
+
 //uint32_t current_gfx_mode = 0;
 void handle_user_inp(char **inp, int n_inputs);
 

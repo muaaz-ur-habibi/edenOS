@@ -14,6 +14,11 @@ void gfx_init(uint32_t *addr, uint32_t width, uint32_t height, uint32_t pitch, u
     framebuffer.bpp = bpp;
     framebuffer.pitch = pitch;
 
+    /*
+        for some reason the 'heap' is overlapping with the framebuffer address, confirmed with the fact that if i draw to framebuffer directly
+        but not to backbuffer, half of the screen is framebuffer, the other half is backbuffer, the following is just a temporary fix
+    */
+    k_malloc(pitch * height);
     backbuffer = (uint32_t *)k_malloc(pitch * height);
     backbuffer = k_memset(backbuffer, pitch * height, 0);
 }
