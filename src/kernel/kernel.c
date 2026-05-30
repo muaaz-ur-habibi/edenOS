@@ -138,19 +138,26 @@ void k_main(uint32_t magic, uint32_t mb2_addr) {
     }
 
 	ui_create_window(200, 100, 400, 300, 5, 0xffffff, "Console");
+    window_t w = ui_create_window(10, 20, 100, 100, 5, 0x0011ff, "Moving");
 
     int mousex, mousey;
 
-    uint32_t frame_start;
+    uint32_t frame_start = 0;
     while (1) {
-        frame_start = get_tick();
-        gfx_cls(BACKGROUND_COLOR);
-        ui_draw_windows();
+        if ((get_tick() - frame_start) >= FRAME_TIME_MS)
+        {
+            frame_start = get_tick();
+            gfx_cls(BACKGROUND_COLOR);
 
-        // polling the mouse
-        mouse_poll(&mousex, &mousey);
-        ui_draw_cursor(mousex, mousey);
-        switch_buffers();
-        //while ((get_tick() - frame_start) < FRAME_TIME_MS) { }
+            // drawing the windows
+            ui_draw_windows();
+            ui_move_window(w.id, 1, 1);
+
+            // polling the mouse
+            mouse_poll(&mousex, &mousey);
+            ui_draw_cursor(mousex, mousey);
+            switch_buffers();
+            //while ((get_tick() - frame_start) < FRAME_TIME_MS) { }
+        }
     }
 }

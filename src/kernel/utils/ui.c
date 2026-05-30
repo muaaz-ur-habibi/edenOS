@@ -129,7 +129,7 @@ void ui_draw_topbar(uint32_t x, uint32_t y, uint32_t w, char *title)
     gfx_drawstring(x, y, title, 0x000000);
 }
 
-void ui_create_window(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t border_size, uint32_t bg_color, char *title)
+window_t ui_create_window(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t border_size, uint32_t bg_color, char *title)
 {
     window_t win;
     win.bg_color = bg_color;
@@ -142,6 +142,20 @@ void ui_create_window(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t b
     win.id = ((n_windows) % MAX_WINDOWS) + 1;
 
     windows[n_windows++] = win;
+
+    return win;
+}
+
+void ui_move_window(int win_id, int dx, int dy)
+{
+    for (size_t i = 0; i < n_windows; i++)
+    {
+        if (windows[i].id == win_id)
+        {
+            windows[i].x += dx, windows[i].y += dy;
+            return;
+        }
+    }
 }
 
 void ui_draw_windows()
