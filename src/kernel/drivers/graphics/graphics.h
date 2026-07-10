@@ -207,11 +207,13 @@ void gfx_init(
 );
 void gfx_putpixel(uint32_t x, uint32_t y, uint32_t color);
 void gfx_cls(uint32_t color);
+void gfx_cls_adv(uint32_t color);
 void gfx_rect(uint32_t x, uint32_t y,
              uint32_t w, uint32_t h,
              uint32_t color);
 void gfx_drawchar(int x, int y, char c, uint32_t color);
 void gfx_drawstring(int x, int y, char *string, uint32_t color);
 void switch_buffers();
+framebuffer_t get_framebuffer_info();
 
 #endif

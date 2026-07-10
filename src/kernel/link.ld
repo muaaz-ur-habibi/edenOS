@@ -5,10 +5,18 @@ SECTIONS
 	.multiboot : {
 		KEEP(*(.multiboot))
 	}
-	.text : {
+	.text ALIGN(4K) : {
 		*(.text)
 	}
-	.rodata : {*(.rodata)}
-	.data : {*(.data)}
-	.bss  : {*(.bss)}
+	.rodata ALIGN(4K) : {*(.rodata)}
+	.data ALIGN (4K) : {*(.data)}
+	.bss ALIGN(4K) : {
+		*(COMMON)
+		*(.bss)
+		. = ALIGN(16);
+		stack_bottom = .;
+		. += 0x4000;
+		stack_top = .;
+	}
+	end = .;
 }

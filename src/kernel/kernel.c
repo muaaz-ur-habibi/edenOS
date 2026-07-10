@@ -2,6 +2,8 @@
 #include "multiboot2.h"
 
 void kernel_init() {
+    k_heap_init();
+    
     set_cursor_offset(0);
     isr_install_handlers();
     init_timer(1000);
@@ -79,10 +81,15 @@ void k_main(uint32_t magic, uint32_t mb2_addr) {
             switch (fb_tag->common.framebuffer_type)
             {
             case MULTIBOOT_FRAMEBUFFER_TYPE_INDEXED:
-
                 break;
             case MULTIBOOT_FRAMEBUFFER_TYPE_RGB:
-				gfx_init((uint32_t *)fb, fb_tag->common.framebuffer_width, fb_tag->common.framebuffer_height, fb_tag->common.framebuffer_pitch, fb_tag->common.framebuffer_bpp);
+				gfx_init(
+                    (uint32_t *)fb,
+                    fb_tag->common.framebuffer_width,
+                    fb_tag->common.framebuffer_height,
+                    fb_tag->common.framebuffer_pitch,
+                    fb_tag->common.framebuffer_bpp
+                );
 				gfx_cls(BACKGROUND_COLOR);
                 switch_buffers();
 				//current_gfx_mode = GRAPHICS_MODE_RGB;
@@ -109,7 +116,6 @@ void k_main(uint32_t magic, uint32_t mb2_addr) {
                       *pixel = color;
                     }
                     break;
-                  case 15:
                   case 16:
                     {
                       multiboot_uint16_t *pixel
@@ -137,27 +143,28 @@ void k_main(uint32_t magic, uint32_t mb2_addr) {
         }
     }
 
-	ui_create_window(200, 100, 400, 300, 5, 0xffffff, "Console");
-    window_t w = ui_create_window(10, 20, 100, 100, 5, 0x0011ff, "Moving");
+	//ui_create_window(200, 100, 400, 300, 5, 0xffffff, "Console");
+    //window_t w = ui_create_window(10, 20, 100, 100, 5, 0x0011ff, "Woah");
 
     int mousex, mousey;
+    framebuffer_t fb = get_framebuffer_info();
 
     uint32_t frame_start = 0;
     while (1) {
-        if ((get_tick() - frame_start) >= FRAME_TIME_MS)
+        if ((get_tick() - frame_start) >= FRAME_TIME_MS || 1)
         {
             frame_start = get_tick();
-            gfx_cls(BACKGROUND_COLOR);
+            gfx_cls_adv(BACKGROUND_COLOR);
 
             // drawing the windows
-            ui_draw_windows();
-            ui_move_window(w.id, 1, 1);
+            //ui_draw_windows();
+            //ui_move_window(w.id, 1, 1);
 
             // polling the mouse
             mouse_poll(&mousex, &mousey);
             ui_draw_cursor(mousex, mousey);
+
             switch_buffers();
-            //while ((get_tick() - frame_start) < FRAME_TIME_MS) { }
         }
     }
 }

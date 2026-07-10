@@ -26,9 +26,11 @@ header_end:
 section .text
 global start
 extern k_main
+extern stack_top
 
 start:
-    mov esp, 0x8000
+    ;mov esp, 0x8000
+    mov esp, stack_top
 
     lgdt [gdt_descriptor]
 

@@ -15,22 +15,31 @@ void gfx_init(uint32_t *addr, uint32_t width, uint32_t height, uint32_t pitch, u
     framebuffer.pitch = pitch;
 
     /*
-        for some reason the 'heap' is overlapping with the framebuffer address, confirmed with the fact that if i draw to framebuffer directly
-        but not to backbuffer, half of the screen is framebuffer, the other half is backbuffer, the following is just a temporary fix
+        for some reason the 'heap' is overlapping with the framebuffer address, confirmed with the fact that removing the
+        kmalloc, i can see part of the last frame at the top, temporary fix is just setting it to a constant address
     */
 
-    k_malloc(pitch * height);
-    backbuffer = (uint32_t *)k_malloc(pitch * height);
+    //k_malloc(pitch * height);
+    //backbuffer = (uint32_t *)k_malloc(pitch * height);
+    backbuffer = (uint32_t *)0x00200000;
     backbuffer = k_memset(backbuffer, pitch * height, 0);
+}
+
+framebuffer_t get_framebuffer_info() {
+    return framebuffer;
 }
 
 void switch_buffers()
 {
-    k_memcpy(framebuffer.addr, backbuffer, framebuffer.pitch * framebuffer.height);
-    //for (uint32_t i = 0; i < framebuffer.width * framebuffer.height; i++) { framebuffer.addr[i] = backbuffer[i]; }
+    k_memcpy_adv(framebuffer.addr, backbuffer, framebuffer.pitch * framebuffer.height);
+    /*
+    uint32_t *temp = backbuffer;
+    backbuffer = framebuffer.addr;
+    framebuffer.addr = temp;
+    */
 }
 
-void gfx_putpixel(uint32_t x, uint32_t y, uint32_t color)
+void gfx_putpixel_old(uint32_t x, uint32_t y, uint32_t color)
 {
     if (x >= framebuffer.width || y >= framebuffer.height)
     {
@@ -61,6 +70,11 @@ void gfx_putpixel(uint32_t x, uint32_t y, uint32_t color)
         *(uint8_t *)pixel = (uint8_t)color;
         break;
     }
+}
+
+void gfx_putpixel(uint32_t x, uint32_t y, uint32_t color)
+{
+    backbuffer[y * (framebuffer.pitch / 4) + x] = color;
 }
 
 void gfx_drawchar(int x, int y, char c, uint32_t color)
@@ -94,4 +108,16 @@ void gfx_cls(uint32_t color)
             gfx_putpixel(x, y, color);
         }
     }
+}
+
+void gfx_cls_adv(uint32_t color)
+{
+    uint32_t count = (framebuffer.pitch * framebuffer.height) / 4;
+    uint32_t *buf = backbuffer;
+    asm volatile(
+        "rep stosl"
+        : "+D"(buf), "+c"(count)
+        : "a"(color)
+        : "memory"
+    );
 }

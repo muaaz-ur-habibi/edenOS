@@ -1,3 +1,4 @@
 src/kernel/build
 src/boot
 iso/run
+.vscode
