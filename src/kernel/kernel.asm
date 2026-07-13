@@ -9,6 +9,14 @@ dd 0
 dd header_end - header_start
 dd -(0xe85250d6 + 0 + (header_end - header_start))
 
+;align 8
+;dw 5
+;dw 0
+;dd 20
+;dd 800
+;dd 600
+;dd 16
+
 align 8
 dw 0
 dw 0

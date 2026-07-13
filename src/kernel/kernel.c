@@ -164,11 +164,11 @@ void k_main(uint32_t magic, uint32_t mb2_addr) {
         }
     }
 
-	ui_create_window(200, 100, 200, 150, 5, 0xffffff, "Console");
-    widget_t wi = ui_create_widget(100, 20, 20, 20, 0xF0000, WT_BUTTON);
+	ui_create_window(30, 50, 300, 200, 2, 0xffffff, "Console");
 
     int mousex, mousey;
     pci_load_devices();
+    find_storage_controller();
 
     uint32_t frame_start = 0, frame_time = 0;
     while (1) {
@@ -183,8 +183,8 @@ void k_main(uint32_t magic, uint32_t mb2_addr) {
             ui_draw_windows();
             ui_draw_widgets();
 
-            gfx_drawstring(10, 10, k_inttostr((int)ahci_found), 0);
-            gfx_drawstring(10, 26, k_hextostr(pci_devices[0].subclass), 0);
+            gfx_drawstring(10, 10, k_inttostr((int)frame_time), 0);
+            gfx_drawstring(10, 26, k_hextostr(pci_devices[0].vend_id), 0);
 
             // polling the mouse
             mouse_poll(&mousex, &mousey);
