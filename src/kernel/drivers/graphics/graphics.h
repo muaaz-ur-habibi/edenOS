@@ -216,4 +216,11 @@ void gfx_drawstring(int x, int y, char *string, uint32_t color);
 void switch_buffers();
 framebuffer_t get_framebuffer_info();
 
+static inline uint16_t pack_color16(uint32_t color) {
+    uint8_t r = (color >> 16) & 0xFF;
+    uint8_t g = (color >> 8)  & 0xFF;
+    uint8_t b =  color        & 0xFF;
+    return ((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3);
+}
+
 #endif

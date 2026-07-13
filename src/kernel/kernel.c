@@ -49,6 +49,27 @@ void handle_user_inp(char **inp, int n_inputs)
         } else {
             vga_prints("\nmalloc usage: malloc [size to allocate]\n");
         }
+    } else
+    if (k_strcmp(inp[0], "pci"))
+    {
+        vga_prints("\nPci devices: ");
+        vga_prints(k_inttostr(n_pci_devices));
+        vga_prints("\n");      
+        vga_prints("\nPci device at ");
+        vga_prints(inp[1]);
+        vga_prints("\n");
+        pci_device_t d = pci_devices[k_strtoint(inp[1])];
+        vga_prints("Vendor ");
+        vga_prints(k_hextostr(d.vend_id));
+        vga_prints(", Device ");
+        vga_prints(k_hextostr(d.dev_id));
+        vga_prints(", Class ");
+        vga_prints(k_hextostr(d.class));
+        vga_prints(", Subclass ");
+        vga_prints(k_hextostr(d.subclass));
+        vga_prints(", Prog_if");
+        vga_prints(k_hextostr(d.prog_if));
+        vga_prints("\n");
     }
 }
 
@@ -143,22 +164,27 @@ void k_main(uint32_t magic, uint32_t mb2_addr) {
         }
     }
 
-	//ui_create_window(200, 100, 400, 300, 5, 0xffffff, "Console");
-    //window_t w = ui_create_window(10, 20, 100, 100, 5, 0x0011ff, "Woah");
+	ui_create_window(200, 100, 200, 150, 5, 0xffffff, "Console");
+    widget_t wi = ui_create_widget(100, 20, 20, 20, 0xF0000, WT_BUTTON);
 
     int mousex, mousey;
-    framebuffer_t fb = get_framebuffer_info();
+    pci_load_devices();
 
-    uint32_t frame_start = 0;
+    uint32_t frame_start = 0, frame_time = 0;
     while (1) {
-        if ((get_tick() - frame_start) >= FRAME_TIME_MS || 1)
+        frame_time = get_tick() - frame_start;
+
+        if ((get_tick() - frame_start) >= FRAME_TIME_MS)
         {
             frame_start = get_tick();
-            gfx_cls_adv(BACKGROUND_COLOR);
+            gfx_cls(BACKGROUND_COLOR);
 
             // drawing the windows
-            //ui_draw_windows();
-            //ui_move_window(w.id, 1, 1);
+            ui_draw_windows();
+            ui_draw_widgets();
+
+            gfx_drawstring(10, 10, k_inttostr((int)ahci_found), 0);
+            gfx_drawstring(10, 26, k_hextostr(pci_devices[0].subclass), 0);
 
             // polling the mouse
             mouse_poll(&mousex, &mousey);

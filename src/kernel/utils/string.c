@@ -32,55 +32,46 @@ int k_strcmp(char *str1, char *str2)
 
 char **k_strsplt(char *str, char delim, int *toks_n)
 {
-    char *s = str;
-    int n_toks = 0;
+    int len = k_strlen(str);
+    int count = 1;
 
-    for (size_t i = 0; i < (k_strlen(s)+1); i++)
+    // Count tokens
+    for (int i = 0; i < len; i++)
     {
-        if (s[i] == delim || s[i] == '\0')
+        if (str[i] == delim)
+            count++;
+    }
+
+    *toks_n = count;
+
+    char **toks = k_malloc(sizeof(char *) * (count + 1));
+
+    int tok = 0;
+    int start = 0;
+
+    for (int i = 0; i <= len; i++)
+    {
+        if (str[i] == delim || str[i] == '\0')
         {
-            n_toks++;
+            int size = i - start;
+
+            toks[tok] = k_malloc(size + 1);
+
+            for (int j = 0; j < size; j++)
+            {
+                toks[tok][j] = str[start + j];
+            }
+
+            toks[tok][size] = '\0';
+
+            tok++;
+            start = i + 1;
         }
     }
-    *toks_n = n_toks;
 
-    if (n_toks > 1)
-    {        
-        char **toks = k_malloc(sizeof(char *) * n_toks);
+    toks[tok] = NULL;
 
-        int x = 0;
-        int cur_tok = 0;
-        for (size_t i = 0; i < k_strlen(s); i++)
-        {
-            if (s[i] == delim)
-            {
-                toks[cur_tok++] = k_malloc(sizeof(char) * (x + 1));
-            } else
-            {
-                x++;
-            }
-        }
-        cur_tok = 0;
-        x=0;
-        for (size_t i = 0; i < k_strlen(s); i++)
-        {
-            if (s[i] == delim)
-            {
-                toks[cur_tok][x] = '\0';
-                cur_tok++; x=0;
-            } else {
-                toks[cur_tok][x++] = s[i];
-            }
-        }
-
-        return toks;
-    } else
-    {
-        char **toks = (char **)k_malloc(sizeof(char *));
-        toks[0] = str;
-        toks[1] = NULL;
-        return toks;
-    }
+    return toks;
 }
 
 void k_strrev(char *str)

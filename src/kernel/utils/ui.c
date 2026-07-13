@@ -1,9 +1,11 @@
 #include "ui.h"
 
 window_t windows[MAX_WINDOWS];
+widget_t widgets[MAX_WIDGETS];
 
 int free_ptr = 0;
 int n_windows = 0;
+int n_widgets = 0;
 
 void ui_init_windows()
 {
@@ -22,6 +24,14 @@ void ui_draw_rect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t color
             gfx_putpixel(xx, yy, color);
         }
     }
+}
+
+void ui_draw_rect_hollow(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t thickness, uint32_t color)
+{
+    ui_draw_hline(x, y, w, color);
+    ui_draw_hline(x, y+h, w, color);
+    ui_draw_vline(x, y, h, color);
+    ui_draw_vline(x+w, y, h, color);
 }
 
 void ui_draw_hline(uint32_t x, uint32_t y, uint32_t l, uint32_t color)
@@ -164,11 +174,12 @@ void ui_draw_windows()
     {
         if (windows[i].id)
         {
-            ui_draw_rect(
+            ui_draw_rect_hollow(
                 windows[i].x-windows[i].border_size,
                 windows[i].y-windows[i].border_size,
                 windows[i].w+windows[i].border_size*2,
-                windows[i].h+windows[i].border_size*2, 0x000000);
+                windows[i].h+windows[i].border_size*2, 0, 0
+            );
             ui_draw_topbar(
                 windows[i].x,
                 windows[i].y,
@@ -179,5 +190,32 @@ void ui_draw_windows()
                 windows[i].w,
                 windows[i].h, windows[i].bg_color);
         }
+    }
+}
+
+widget_t ui_create_widget(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t color, int type)
+{
+    widget_t widget;
+    if (type == WT_BUTTON)
+    {
+        widget.bg_color = color;
+        widget.px = x; widget.py = y;
+        widget.h = h, widget.w = w;
+        widget.clickable = 1;
+    }
+
+    widgets[n_widgets++] = widget;
+
+    return widget;
+}
+
+void ui_draw_widgets()
+{
+    for (size_t i = 0; i < n_widgets; i++)
+    {
+        widget_t w = widgets[i];
+        ui_draw_rect(
+            w.px, w.py, w.w, w.h, w.bg_color
+        );
     }
 }
